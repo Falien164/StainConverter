@@ -1,6 +1,6 @@
 # kidneyGAN
 science article for university project (IEEE)
-### WORK IN PROGRESS
+### ***WORK IN PROGRESS***
 This project is about staining kidneys images (HE and PAS) and generating artificial images from one stain into another.
 
 There will be implementation of Pix2Pix and CycleGAN methods on kidneys glomeruli. It will be possible to pick which learning should be used (supervised or unsupersived)
