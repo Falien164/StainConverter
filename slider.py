@@ -3,12 +3,16 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import os, glob
 import time
+import argparse, sys
 
 class Slider:
 
-    def __init__(self, filename,level):
+    def __init__(self, filename,level, output_folder_PAS, output_folder_HE, display=False):
         self.filename = filename
         self.level = level
+        self.display = display
+        self.output_folder_PAS = output_folder_PAS
+        self.output_folder_HE = output_folder_HE
 
     def openSlide(self):
         self.slide = OpenSlide(self.filename + ".mrxs")
@@ -45,7 +49,8 @@ class Slider:
             if( dot[0] > self.boxes[i][0] and dot[0] < self.boxes[i][2]
             and dot[1] > self.boxes[i][1] and dot[1] < self.boxes[i][3]):
                 row = np.array([[dot[0], dot[1],i]])
-                self.assignedDots = np.append(self.assignedDots, row, axis=0) 
+                self.assignedDots = np.append(self.assignedDots, row, axis=0)
+                i +=1
 
     def assingDotsToBoxes(self):
         self.assignedDots = np.empty((0,3), int)
@@ -72,17 +77,14 @@ class Slider:
                 area_scaled = [int(point*pow(0.5,self.level)) for point in area]
                 cropped_img = self.region.crop(area_scaled)
                 file = self.getNameToSavedImage(i)
-                # cropped_img.show()
-                cropped_img.save(file)    #####################
+                cropped_img.save(file)
             i = i+1
 
     def getNameToSavedImage(self, numberOfDot):
         if("PAS" in self.filename):
-            #file = "output/PAS/test_PAS/"
-            file = "output/PAS/"
+            file = self.output_folder_PAS
         if("HE" in self.filename):
-            #file = "output/HE/test_HE/"
-            file = "output/HE/"
+            file = self.output_folder_HE
         file = file + os.path.basename(self.filename) + "_"
         file = file + str(numberOfDot)
         if("PAS" in self.filename):
@@ -111,6 +113,9 @@ class Slider:
         print("\n-------- STARTING OPERATIONS WITH FILE ", self.filename, "---------")
         self.openSlide()
         self.getAllRectangles()
+        self.openRegion(self.boxes[0])
+
+
         self.getAllDots()
         self.assingDotsToBoxes()
         for i in range (0,len(self.boxes)):
@@ -118,7 +123,8 @@ class Slider:
             self.openRegion(self.boxes[self.currentBox])
             self.extractData()
         self.showStatistics()
-        #self.displayInfo()
+        if self.display:
+            self.displayInfo()
         if(len(self.dots) == len(self.assignedDots[:,0])):
             return True
         else:
@@ -126,22 +132,39 @@ class Slider:
 
 if __name__ == '__main__':
     
-    # filename = "PAS_przebarwiony/AA7756"
-    # filename = "HE_do_recznego/AA7756"  
-    # level = 3
-    # slider = Slider(filename, level)
-    # slider.main()
+    
+    parser=argparse.ArgumentParser()
 
+    parser.add_argument('--level', help='list of resolutions of slides which should be loaded, range is 0-13, default [0]',default=[0])
+    parser.add_argument('--PAS_folder', help='folder that contains PAS slides files with extension .mrxs, default: PAS_przebarwiony/*.mrxs', default='PAS_przebarwiony/*.mrxs')
+    parser.add_argument('--HE_folder', help='folder that contains HE slides files with extension .mrxs, default: HE_do_recznego/*.mrxs', default= 'HE_do_recznego/*.mrxs')
+    # train images: 'PAS_przebarwiony/*.mrxs' and 'HE_do_recznego/*.mrxs'
+    # test images:'HE_do_recznego/testowe/*.mrxs' and 'PAS_przebarwiony/testowe/*.mrxs'
+    
+    parser.add_argument('--output_folder_PAS', help='localization where extracted PAS images should be located', default="output/PAS_s0/")
+    parser.add_argument('--output_folder_HE', help='localization where extracted HE images should be located', default="output/HE_s0/")  
+    #"output/PAS_s0/" or "output/PAS_s0/test_PAS/"
+    #"output/HE_s0/" or "output/HE_s0/test_HE/"
+    
+    parser.add_argument('--filename', help='.mrxs file which specifically should be loaded, if given PAS/HE_folder ignored')
+    parser.add_argument('--display', help='boolean, show information about slides, number of levels/dimension etc.', default=False)
+    
+    args = parser.parse_args()
+    
+    if args.filename: #eg. filename = "PAS_przebarwiony/AA7756"  or filename = "HE_do_recznego/AA7756"  
+        slider = Slider(args.filename, args.level)
+        slider.main()
+        sys.exit()
 
     start_time = time.time()
     results = np.empty(0)
-    #files = glob.glob('PAS_przebarwiony/testowe/*.mrxs') + glob.glob('HE_do_recznego/testowe/*.mrxs')
-    files = glob.glob('PAS_przebarwiony/*.mrxs') + glob.glob('HE_do_recznego/*.mrxs')
+
+    files =  glob.glob(args.PAS_folder) + glob.glob(args.HE_folder)
     for file in files:
         filename = os.path.splitext(file)[0]
-        for j in range(0,4):        ## change from 4 to 1 for test
+        for j in args.level:        
             level = j
-            slider = Slider(filename, level)
+            slider = Slider(filename, level, args.output_folder_PAS,args.output_folder_HE, args.display)
             results = np.append(results, slider.main())
     print("Final results of assigning dots = ", results)
 
