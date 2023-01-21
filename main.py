@@ -1,11 +1,11 @@
+from datetime import datetime
+
 import os
-import sys
 import environ
+import sys
 
 from model_creator import ModelCreator
 from utils import generate_image
-
-from datetime import datetime
 
 
 class StainConverter:
@@ -28,8 +28,8 @@ class StainConverter:
 
         data_loader.display_sample_pair(train_dataset, self.results_filename)
 
-        # train_dataset = train_dataset.take(3)
-        # test_dataset = test_dataset.take(2)
+        train_dataset = train_dataset.take(3)
+        test_dataset = test_dataset.take(2)
 
         model = ModelCreator.create_model(library=library, type_of_gan=os.environ.get('MODEL'))
 
@@ -39,7 +39,8 @@ class StainConverter:
 
         self.generate_transformed_images(model, test_dataset)
 
-        #TODO: calculate final metrics
+        # self.calculate_metrics()
+        # TODO: calculate final metrics
 
     def train(self, model, train_dataset, test_dataset):
         for step, (input_img, target_img) in train_dataset.repeat().take(int(os.environ['N_STEPS'])).enumerate():
@@ -58,7 +59,7 @@ class StainConverter:
         os.mkdir(os.path.join(self.results_filename, 'generated_images'))
 
     def generate_transformed_images(self, model, test_dataset):
-        for idx, (input_img, target_img) in enumerate(test_dataset.take(1)):
+        for idx, (input_img, target_img) in enumerate(test_dataset.take(len(test_dataset))):
             generate_image(model.generator, input_img, target_img, self.results_filename + "/generated_images/", idx)
 
     def save_fid(self, fid, step):
@@ -82,7 +83,6 @@ if __name__ == "__main__":
     else:
         print(".env not found")
         exit()
-
     library = os.environ.get('LIBRARY', '').lower()
 
     if library == 'tensorflow':
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         from torch_library.metrics import fid
         # TODO: code models in PyTorch
     else:
-        raise "set env variable LIBRARY to 'tensorflow' or 'torch'"
+        raise Exception("set env variable LIBRARY to 'tensorflow' or 'torch'")
 
     stain_converter = StainConverter()
     stain_converter.training_pipeline()

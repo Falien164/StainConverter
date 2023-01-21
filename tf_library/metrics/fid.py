@@ -9,7 +9,7 @@ def calculate_fid(generator, dataset):
     model_inception_v3 = InceptionV3(include_top=False, pooling='avg', input_shape=(256, 256, 3))
     test_input = []
     test_output = []
-    for example_input, example_target in dataset.take(len(list(dataset))):
+    for example_input, example_target in dataset.take(len(dataset)):
         prediction = generator(example_input, training=True)
         test_input.append(example_target)
         test_output.append(prediction)
