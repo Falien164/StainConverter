@@ -13,10 +13,11 @@ There will be implementation of Pix2Pix and CycleGAN methods on kidneys glomerul
 
 To extract images from slides you need .xml file with annotation. For this project ASAP was used to annotate all ROIs and dots where glomeruli is located. Use slider.py and all necessary argumets. Use --help to get information about arguments.
 
-
+'''
 @phdthesis{lysik2022gan,
   title={GAN application in the histological stain conversion},
   author={{\L}ysik, Mateusz},
   year={2022},
   school={Instytut Elektrotechniki Teoretycznej i System{\'o}w Informacyjno-Pomiarowych}
 }
+'''
