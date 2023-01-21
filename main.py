@@ -1,6 +1,5 @@
 import os
 import sys
-import pickle
 import environ
 
 from model_creator import ModelCreator
@@ -14,8 +13,14 @@ class StainConverter:
         self.results_filename = None
         self.best_fid = sys.float_info.max
 
-    def training_pipeline(self, save_sample_images_per_step=False):
+    def training_pipeline(self):
         self.create_folder_for_results()
+
+        train_he_images_path = os.environ.get('TRAIN_HE_IMAGES_PATH')
+        train_pas_images_path = os.environ.get('TRAIN_PAS_IMAGES_PATH')
+        test_he_images_path = os.environ.get('TEST_HE_IMAGES_PATH')
+        test_pas_images_path = os.environ.get('TEST_PAS_IMAGES_PATH')
+        # TODO: Validate if paths are correct
 
         data_loader = DataLoader(train_he_images_path=train_he_images_path, train_pas_images_path=train_pas_images_path,
                                  test_he_images_path=test_he_images_path, test_pas_images_path=test_pas_images_path)
@@ -23,8 +28,8 @@ class StainConverter:
 
         data_loader.display_sample_pair(train_dataset, self.results_filename)
 
-        train_dataset = train_dataset.take(3)
-        test_dataset = test_dataset.take(2)
+        # train_dataset = train_dataset.take(3)
+        # test_dataset = test_dataset.take(2)
 
         model = ModelCreator.create_model(library=library, type_of_gan=os.environ.get('MODEL'))
 
@@ -33,6 +38,8 @@ class StainConverter:
         self.load_model(model.generator)
 
         self.generate_transformed_images(model, test_dataset)
+
+        #TODO: calculate final metrics
 
     def train(self, model, train_dataset, test_dataset):
         for step, (input_img, target_img) in train_dataset.repeat().take(int(os.environ['N_STEPS'])).enumerate():
@@ -75,6 +82,7 @@ if __name__ == "__main__":
     else:
         print(".env not found")
         exit()
+
     library = os.environ.get('LIBRARY', '').lower()
 
     if library == 'tensorflow':
@@ -86,13 +94,6 @@ if __name__ == "__main__":
         # TODO: code models in PyTorch
     else:
         raise "set env variable LIBRARY to 'tensorflow' or 'torch'"
-
-    train_he_images_path = os.environ.get('TRAIN_HE_IMAGES_PATH')
-    train_pas_images_path = os.environ.get('TRAIN_PAS_IMAGES_PATH')
-    test_he_images_path = os.environ.get('TEST_HE_IMAGES_PATH')
-    test_pas_images_path = os.environ.get('TEST_PAS_IMAGES_PATH')
-
-    # TODO: Validate if paths are correct
 
     stain_converter = StainConverter()
     stain_converter.training_pipeline()
