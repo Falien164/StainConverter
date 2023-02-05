@@ -1,4 +1,6 @@
 from openslide import OpenSlide
+from PIL import Image
+
 import xml.etree.ElementTree as ET
 import numpy as np
 import os, glob
@@ -77,6 +79,8 @@ class Slider:
                 area_scaled = [int(point*pow(0.5,self.level)) for point in area]
                 cropped_img = self.region.crop(area_scaled)
                 file = self.getNameToSavedImage(i)
+
+                cropped_img = Image.fromarray(np.array(cropped_img, np.uint8)[:,:,0:3])
                 cropped_img.save(file)
             i = i+1
 
@@ -136,13 +140,13 @@ if __name__ == '__main__':
     parser=argparse.ArgumentParser()
 
     parser.add_argument('--level', help='list of resolutions of slides which should be loaded, range is 0-13, default [0]',default=[0])
-    parser.add_argument('--PAS_folder', help='folder that contains PAS slides files with extension .mrxs, default: PAS_przebarwiony/*.mrxs', default='PAS_przebarwiony/*.mrxs')
-    parser.add_argument('--HE_folder', help='folder that contains HE slides files with extension .mrxs, default: HE_do_recznego/*.mrxs', default= 'HE_do_recznego/*.mrxs')
+    parser.add_argument('--PAS_folder', help='folder that contains PAS slides files with extension .mrxs, default: PAS_przebarwiony/*.mrxs', default='PAS_przebarwiony/testowe/*.mrxs')
+    parser.add_argument('--HE_folder', help='folder that contains HE slides files with extension .mrxs, default: HE_do_recznego/*.mrxs', default= 'HE_do_recznego/testowe/*.mrxs')
     # train images: 'PAS_przebarwiony/*.mrxs' and 'HE_do_recznego/*.mrxs'
     # test images:'HE_do_recznego/testowe/*.mrxs' and 'PAS_przebarwiony/testowe/*.mrxs'
     
-    parser.add_argument('--output_folder_PAS', help='localization where extracted PAS images should be located', default="output/PAS_s0/")
-    parser.add_argument('--output_folder_HE', help='localization where extracted HE images should be located', default="output/HE_s0/")  
+    parser.add_argument('--output_folder_PAS', help='localization where extracted PAS images should be located', default="output/PAS_s0/test_PAS/")
+    parser.add_argument('--output_folder_HE', help='localization where extracted HE images should be located', default="output/HE_s0/test_HE/")  
     #"output/PAS_s0/" or "output/PAS_s0/test_PAS/"
     #"output/HE_s0/" or "output/HE_s0/test_HE/"
     

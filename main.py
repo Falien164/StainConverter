@@ -35,12 +35,11 @@ class StainConverter:
 
         self.train(model, train_dataset, test_dataset)
 
-        self.load_model(model.generator)
+        self.load_best_model(model.generator)
 
-        self.generate_transformed_images(model, test_dataset)
+        self.generate_comparative_images(model, test_dataset)
 
-        # self.calculate_metrics()
-        # TODO: calculate final metrics
+        self.calculate_metrics(model, test_dataset)
 
     def train(self, model, train_dataset, test_dataset):
         for step, (input_img, target_img) in train_dataset.repeat().take(int(os.environ['N_STEPS'])).enumerate():
@@ -58,9 +57,16 @@ class StainConverter:
         os.mkdir(self.results_filename)
         os.mkdir(os.path.join(self.results_filename, 'generated_images'))
 
-    def generate_transformed_images(self, model, test_dataset):
+    def generate_comparative_images(self, model, test_dataset):
         for idx, (input_img, target_img) in enumerate(test_dataset.take(len(test_dataset))):
             generate_image(model.generator, input_img, target_img, self.results_filename + "/generated_images/", idx)
+
+    def calculate_metrics(self, model, test_dataset):
+        from tf_library.metrics.image_metrics import ImageMetrics
+        metrics_handler = ImageMetrics()
+        results = metrics_handler.count_metrics(model, test_dataset)
+        metrics_path = self.results_filename + os.environ["METRICS_FILENAME"]
+        metrics_handler.export_metrics_to_file(metrics=results, metrics_result_filename=metrics_path)
 
     def save_fid(self, fid, step):
         with open(self.results_filename + 'fid.txt', 'a') as file:
@@ -70,7 +76,7 @@ class StainConverter:
         model.save_weights(self.results_filename + 'gen.h5')
         # TODO: save all models
 
-    def load_model(self, model):
+    def load_best_model(self, model):
         model.load_weights(self.results_filename + 'gen.h5')
         # TODO: load all models
 
