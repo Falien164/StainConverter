@@ -3,7 +3,7 @@ The scientific goal of this project is to use GAN to generate an artifical image
 - Science article for university project (IEEE)
 - Master thesis on Warsaw University of Technology
 
-The secondary goal of this project is to compare usage of a PyTorch and TensorFlow libraries. Therefore, a training pipeline was created which can handle each library separatly. It can call either TensorFlow or PyTorch library depending on the enviroment variables. In each library, Four GAN variants can be used to generate images: Pix2Pix, CycleGan, Pix2Pix with resnet and CycleGan with U-net
+The secondary goal of this project is to compare usage of a PyTorch and TensorFlow libraries. Therefore, a training pipeline was created which can handle each library separatly. It can call either TensorFlow or PyTorch library depending on the enviroment variables. In each library, Four GAN variants can be used to generate images: Pix2Pix, CycleGan, Pix2Pix with resnet and CycleGan with U-net.
 
 
 
