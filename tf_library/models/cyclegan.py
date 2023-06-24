@@ -4,9 +4,9 @@ import tensorflow as tf
 class CycleGAN:
     def __init__(self, generator, discriminator):
         super().__init__()
-        self.generator_g = generator
+        self.generator_g = tf.keras.models.clone_model(generator)
         self.generator_f = generator
-        self.discriminator_x = discriminator
+        self.discriminator_x = tf.keras.models.clone_model(discriminator)
         self.discriminator_y = discriminator
 
         self.loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
